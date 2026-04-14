@@ -1,0 +1,12 @@
+{
+  "android": {
+    "platformName": "Android",
+    "appium:platformVersion": "15",
+    "appium:deviceName": "Test9t",
+    "appium:automationName": "UiAutomator2",
+    "appium:ensureWebviewsHavePages": true,
+    "appium:nativeWebScreenshot": true,
+    "appium:newCommandTimeout": 3600,
+    "appium:connectHardwareKeyboard": true
+  }
+}

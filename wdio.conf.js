@@ -22,7 +22,7 @@ export const config = {
     // of the config file unless it's absolute.
     //
     specs: [
-        // ToDo: define location for spec files here
+        './tests/**/*.test.js'
     ],
     // Patterns to exclude.
     exclude: [
@@ -51,12 +51,15 @@ export const config = {
     // https://saucelabs.com/platform/platform-configurator
     //
     capabilities: [{
-        // capabilities for local Appium web tests on an Android Emulator
+        // Capabilities for local Appium Android native app tests.
         platformName: 'Android',
-        browserName: 'Chrome',
         'appium:deviceName': 'Android GoogleAPI Emulator',
-        'appium:platformVersion': '12.0',
-        'appium:automationName': 'UiAutomator2'
+        'appium:platformVersion': '15',
+        'appium:automationName': 'UiAutomator2',
+        'appium:appPackage': 'com.devexperts.tdmobile.platform.android.thinkorswim',
+        'appium:appActivity': 'com.devexperts.tdmobile.android.ui.StartupActivity',
+        'appium:autoGrantPermissions': true,
+        'appium:newCommandTimeout': 300
     }],
 
     //

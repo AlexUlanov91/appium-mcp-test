@@ -7,7 +7,6 @@ The main purpose of this project is to automate mobile UI testing with AI so tes
 ## Project Overview
 
 - Primary purpose: automate mobile UI testing with AI using the Appium MCP workflow.
-- Uses Page Object Model + WebdriverIO for maintainable, repeatable test automation.
 - Captures debugging artifacts on failures (screenshot and screen recording) to support fast AI-assisted triage.
 - Workflow-first execution model:
   - Start MCP tools
@@ -18,9 +17,9 @@ The main purpose of this project is to automate mobile UI testing with AI so tes
 This workflow allows AI to:
 - Drive the app through Appium commands exposed by MCP tools
 - Collect page source, screenshots, and recordings for debugging
-- Help generate and refine automated test cases
+- Help generate and refine automated test cases with use of Page Object Model + WebdriverIO for maintainable, repeatable test automation.
 
-Current implemented scenario:
+Current implemented scenario example:
 - `tests/guestPassRegistration.test.js`
   - Validates the non-US resident signup path reaches the "Enter Security Code" step.
 
@@ -57,7 +56,7 @@ Script:
 - `pageobjects/` - page objects and flow helpers
 - `media/screenshots/` - failure screenshots
 - `media/videos/` - failure videos
-- `capabilities.json` - alternative/sample Android capabilities profile
+- `capabilities.json` - Android capabilities profile
 
 ## Prerequisites
 
@@ -69,9 +68,7 @@ Script:
 
 ## Installation
 
-```bash
-npm install
-```
+//ToDo
 
 ## Appium Setup
 

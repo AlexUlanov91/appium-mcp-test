@@ -107,7 +107,7 @@ export default new FormScreen();
 
 4. **Mocha Framework**: Structure your tests using Mocha's describe, beforeAll, afterAll, and it blocks.
 ```javascript
-import FormScreen from "../../screen-objects/form.js";
+import FormScreen from "../../pageobjects/form.js";
 
 describe("Forms E2E Test", () => {
   it("should complete the forms flow successfully", async () => {
@@ -151,9 +151,15 @@ expect(object).toHaveProperty("key", "value");
 
 6. **Comments**: Include comments in your code to explain the purpose where necessary.
 
-7. **File Naming**: When done, save the test case with a descriptive name, e.g., `e2e.test.js` in the tests directory.
+7. **File Naming**: When done, save the test case with a descriptive name based on actions performed in the test, e.g., `guestPassRegistration.test.js` in the tests directory.
 
-8. **Running Tests**: Execute the test file and iterate until the test passes.
+8. **Initial Baseline Execution**: Before creating a new E2E test, run the initial/manual validation flow once and capture both a screenshot and a screen recording for that run.
+
+9. **Baseline Failure Gate**: If the initial baseline execution fails, do not create or modify any test code. Stop with an error message indicating the failure.
+
+10. **Running Tests**: After creating a test, execute that specific test file. If it fails, debug the failure, fix the test or supporting code as needed, and rerun it until it passes.
+
+11. **Failure Artifacts**: For each test run (including the initial baseline execution), capture a screenshot and screen recording, but persist them only when execution fails. Save screenshots under `media/screenshots/<test name>/` and videos under `media/videos/<test name>/`, for example: `media/screenshots/thinkorswim guestPassRegistrationError/` and `media/videos/thinkorswim guestPassRegistrationError/`.
 
 # References:
 https://github.com/gavrix/appium-mcp

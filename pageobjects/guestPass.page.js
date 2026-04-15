@@ -1,106 +1,129 @@
+const APP_PACKAGE = 'com.devexperts.tdmobile.platform.android.thinkorswim';
+
 class GuestPassPage {
-  constructor() {
-    this.appId = 'com.devexperts.tdmobile.platform.android.thinkorswim';
-  }
-
-  get guestPassCard() {
-    return $('id=com.devexperts.tdmobile.platform.android.thinkorswim:id/guestPass');
-  }
-
-  get createGuestPassButton() {
-    return $('android=new UiSelector().text("CREATE A GUEST PASS")');
-  }
-
-  get signUpWithEmailButton() {
-    return $('~Sign up with your email');
-  }
-
-  get firstNameInput() {
-    return $('android=new UiSelector().className("android.widget.EditText").instance(0)');
-  }
-
-  get lastNameInput() {
-    return $('android=new UiSelector().className("android.widget.EditText").instance(1)');
-  }
-
-  get emailInput() {
-    return $('android=new UiSelector().className("android.widget.EditText").instance(2)');
-  }
-
-  get nonUsResidentRadio() {
-    return $('android=new UiSelector().text("No (will not impact Guest Pass access)")');
-  }
-
-  get continueButton() {
-    return $('android=new UiSelector().text("Continue")');
-  }
-
-  get securityCodeTitle() {
-    return $('android=new UiSelector().textContains("Enter Security Code")');
-  }
-
-  async openThinkorswim() {
-    await driver.activateApp(this.appId);
-    await this.guestPassCard.waitForDisplayed({ timeout: 20000 });
-  }
-
-  async goToGuestPass() {
-    await this.guestPassCard.click();
-    await this.createGuestPassButton.waitForDisplayed({ timeout: 20000 });
-  }
-
-  async goToCreatePage() {
-    await this.createGuestPassButton.click();
-    await this.signUpWithEmailButton.waitForDisplayed({ timeout: 20000 });
-  }
-
-  async signUpWithEmail() {
-    await this.signUpWithEmailButton.click();
-    await this.firstNameInput.waitForDisplayed({ timeout: 20000 });
-  }
-
-  async fillPersonalInfo({ firstName, lastName, email }) {
-    await this.firstNameInput.setValue(firstName);
-    await this.lastNameInput.setValue(lastName);
-    await this.emailInput.setValue(email);
-  }
-
-  async selectNonUsResident() {
-    await this.nonUsResidentRadio.click();
-  }
-
-  async continueToSecurityCode() {
-    for (let i = 0; i < 5; i += 1) {
-      const displayed = await this.continueButton.isDisplayed().catch(() => false);
-      const enabled = await this.continueButton.isEnabled().catch(() => false);
-
-      if (displayed && enabled) {
-        await this.continueButton.click();
-        return;
-      }
-
-      await driver.execute('mobile: scrollGesture', {
-        left: 80,
-        top: 500,
-        width: 920,
-        height: 1400,
-        direction: 'down',
-        percent: 0.85
-      });
+    get guestPassCard() {
+        return $('id=com.devexperts.tdmobile.platform.android.thinkorswim:id/guestPass');
     }
 
-    throw new Error('Continue button was not enabled after scrolling and form input.');
-  }
+    get createGuestPassText() {
+        return $('//android.widget.TextView[@text="CREATE A GUEST PASS"]');
+    }
 
-  async verifyEnterSecurityCode() {
-    await this.securityCodeTitle.waitForDisplayed({ timeout: 30000 });
-    return this.securityCodeTitle.getText();
-  }
+    get signUpWithEmailText() {
+        return $('//android.widget.TextView[@text="Sign up with your email"]');
+    }
 
-  async exitAndKillApp() {
-    await driver.pressKeyCode(3);
-    await driver.terminateApp(this.appId);
-  }
+    get firstNameInput() {
+        return $('android=new UiSelector().className("android.widget.EditText").instance(0)');
+    }
+
+    get lastNameInput() {
+        return $('android=new UiSelector().className("android.widget.EditText").instance(1)');
+    }
+
+    get emailInput() {
+        return $('android=new UiSelector().className("android.widget.EditText").instance(2)');
+    }
+
+    get nonUsResidentRadio() {
+        return $('//android.widget.RadioButton[@text="No (will not impact Guest Pass access)"]');
+    }
+
+    get continueButton() {
+        return $('//android.widget.Button[@text="Continue"]');
+    }
+
+    async activateApp() {
+        await browser.activateApp(APP_PACKAGE);
+        await this.guestPassCard.waitForDisplayed({ timeout: 30000 });
+    }
+
+    async openGuestPass() {
+        await this.guestPassCard.click();
+        await this.createGuestPassText.waitForDisplayed({ timeout: 15000 });
+    }
+
+    async openCreateGuestPass() {
+        await this.tapByRatio(0.5, 0.42);
+        await this.signUpWithEmailText.waitForDisplayed({ timeout: 15000 });
+    }
+
+    async startEmailSignup() {
+        await this.tapByRatio(0.5, 0.344);
+        await this.firstNameInput.waitForDisplayed({ timeout: 20000 });
+    }
+
+    async fillPersonalInformation({ firstName, lastName, email }) {
+        await this.firstNameInput.setValue(firstName);
+        await this.lastNameInput.setValue(lastName);
+        await this.emailInput.setValue(email);
+    }
+
+    async selectNonUsResident() {
+        await this.nonUsResidentRadio.click();
+    }
+
+    async submitPersonalInformation() {
+        await this.scrollUntilContinueVisible();
+        await this.continueButton.click();
+    }
+
+    async waitForSecurityCode() {
+        await browser.waitUntil(async () => {
+            const pageSource = await browser.getPageSource();
+            return pageSource.includes('Enter Security Code');
+        }, {
+            timeout: 30000,
+            timeoutMsg: 'Expected the Enter Security Code page to load.'
+        });
+    }
+
+    async isSecurityCodeVisible() {
+        const pageSource = await browser.getPageSource();
+        return pageSource.includes('Enter Security Code');
+    }
+
+    async exitAndTerminate() {
+        try {
+            await browser.execute('mobile: pressKey', { keycode: 3 });
+        } catch {
+            // Continue to termination even if HOME is unavailable.
+        }
+
+        await browser.terminateApp(APP_PACKAGE);
+    }
+
+    async scrollUntilContinueVisible(maxAttempts = 3) {
+        for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+            if (await this.continueButton.isDisplayed()) {
+                return;
+            }
+
+            await this.swipeUp();
+        }
+
+        await this.continueButton.waitForDisplayed({ timeout: 10000 });
+    }
+
+    async tapByRatio(xRatio, yRatio) {
+        const { width, height } = await browser.getWindowSize();
+        await browser.execute('mobile: clickGesture', {
+            x: Math.round(width * xRatio),
+            y: Math.round(height * yRatio)
+        });
+    }
+
+    async swipeUp() {
+        const { width, height } = await browser.getWindowSize();
+        await browser.execute('mobile: swipeGesture', {
+            left: Math.round(width * 0.1),
+            top: Math.round(height * 0.2),
+            width: Math.round(width * 0.8),
+            height: Math.round(height * 0.65),
+            direction: 'up',
+            percent: 0.7
+        });
+    }
 }
 
 export default new GuestPassPage();

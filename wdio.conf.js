@@ -1,3 +1,20 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const MEDIA_ROOT = path.join(__dirname, 'media');
+const SCREENSHOTS_ROOT = path.join(MEDIA_ROOT, 'screenshots');
+const VIDEOS_ROOT = path.join(MEDIA_ROOT, 'videos');
+
+function sanitizeTestName(name) {
+    return name
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 export const config = {
     //
     // ====================
@@ -211,8 +228,17 @@ export const config = {
     /**
      * Function to be executed before a test (in Mocha/Jasmine) starts.
      */
-    // beforeTest: function (test, context) {
-    // },
+    beforeTest: async function () {
+        await fs.mkdir(SCREENSHOTS_ROOT, { recursive: true });
+        await fs.mkdir(VIDEOS_ROOT, { recursive: true });
+
+        try {
+            await browser.startRecordingScreen();
+        } catch (error) {
+            // Some devices or sessions may not support recording for every test.
+            console.warn(`Could not start screen recording: ${error.message}`);
+        }
+    },
     /**
      * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
      * beforeEach in Mocha)
@@ -235,8 +261,33 @@ export const config = {
      * @param {boolean} result.passed    true if test has passed, otherwise false
      * @param {object}  result.retries   information about spec related retries, e.g. `{ attempts: 0, limit: 0 }`
      */
-    // afterTest: function(test, context, { error, result, duration, passed, retries }) {
-    // },
+    afterTest: async function(test, context, { passed }) {
+        let recordingBase64;
+
+        try {
+            recordingBase64 = await browser.stopRecordingScreen();
+        } catch (error) {
+            console.warn(`Could not stop screen recording: ${error.message}`);
+        }
+
+        if (passed) {
+            return;
+        }
+
+        const testName = sanitizeTestName(test.fullTitle || test.title || 'unnamed-test');
+        const screenshotArtifactsDir = path.join(SCREENSHOTS_ROOT, testName);
+        const videoArtifactsDir = path.join(VIDEOS_ROOT, testName);
+        await fs.mkdir(screenshotArtifactsDir, { recursive: true });
+        await fs.mkdir(videoArtifactsDir, { recursive: true });
+
+        const screenshotPath = path.join(screenshotArtifactsDir, 'failure.png');
+        await browser.saveScreenshot(screenshotPath);
+
+        if (recordingBase64) {
+            const recordingPath = path.join(videoArtifactsDir, 'run.mp4');
+            await fs.writeFile(recordingPath, Buffer.from(recordingBase64, 'base64'));
+        }
+    },
 
 
     /**

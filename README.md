@@ -1,4 +1,4 @@
-# thinkorswim Mobile E2E (Appium + WebdriverIO + AI via Appium MCP)
+# Mobile UI E2E automation with AI (Appium + WebdriverIO + Copilot with Appium MCP)
 
 This repository contains end-to-end mobile UI automation framework using WebdriverIO, Appium, and Mocha, with AI-assisted execution via Appium MCP.
 
